@@ -13,7 +13,7 @@ function getRandomInt(min, max) {
 
 function AssignJobs(lobbyCode) {
     let lobby = lobbyMap.get(lobbyCode);
-    let unassigned = lobby.jobs[lobby.jobs.length - 1];
+    let unassigned = lobby.jobs[lobby.jobs.length - 1].members;
     let members = unassigned.splice(0, unassigned.length); // Removes all elements
 
     members.forEach((member, index) => {
