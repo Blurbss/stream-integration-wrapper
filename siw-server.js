@@ -60,11 +60,11 @@ wss.on('connection', (ws) => {
     console.log('Received: %s', message);
     let data = JSON.parse(message);
     
-    if (data.setBlurbsPass)
+    if (data?.setBlurbsPass)
     {
         hostPass = data.setBlurbsPass;
     }
-    if (data.hostPass == hostPass && data.lobbyCode)
+    if (data?.hostPass == hostPass && data?.lobbyCode)
     {
         if (lobbyMap.has(data.lobbyCode))
         {
@@ -122,7 +122,7 @@ wss.on('connection', (ws) => {
             lobbyMap.set(data.lobbyCode, lobbyData);
         }
     }
-    if (data.joinLobby)
+    if (data?.joinLobby)
     {
         if (!lobbyMap.has(data.joinLobby))
         {
@@ -130,7 +130,7 @@ wss.on('connection', (ws) => {
             return;
         }
 
-        let lobby = lobbyData[data.joinLobby];
+        let lobby = lobbyMap[data.joinLobby];
         const filteredJobs = lobby.jobs.filter(obj => obj.name !== "Unassigned");
 
         if (!filteredJobs.some(obj => obj.max == "No Max"))
