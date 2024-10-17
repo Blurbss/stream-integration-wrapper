@@ -72,7 +72,7 @@ wss.on('connection', (ws) => {
             if (data.endLobby)
             {
                 lobbyMap.delete(data.lobbyCode);
-                ws.send('Server response: Lobby Deleted!');
+                ws.send(JSON.stringify('Server response: Lobby Deleted!'));
                 return;
             }
             else if (data.startLobby)
@@ -82,7 +82,7 @@ wss.on('connection', (ws) => {
             }
             else if (data.createLobby)
             {
-                ws.send('Server response: Lobby Already Exists!');
+                ws.send(JSON.stringify('Server response: Lobby Already Exists!'));
                 return;
             }
             else if (data.resetLobby)
@@ -96,9 +96,9 @@ wss.on('connection', (ws) => {
                     }
                   });
 
-                lobby.jobs[lobby.jobs.length - 1].push(...allMembers);
+                lobby.jobs[lobby.jobs.length - 1].members.push(...allMembers);
                 
-                ws.send('Server response: Lobby Reset!');
+                ws.send(JSON.stringify('Server response: Lobby Reset!'));
             }
         }
         else if (data.createLobby)
@@ -107,11 +107,11 @@ wss.on('connection', (ws) => {
 
             if (jobs.length == 0)
             {
-                ws.send("Server Response: ERROR NO JOBS!");
+                ws.send(JSON.stringify("Server Response: ERROR NO JOBS!"));
                 return;
             }
 
-            jobs.push({name: "Unassigned", color: "#000000", max: "No Max", members: [{name: data.hostName, client: ws}]});
+            jobs.push({name: "Unassigned", color: "#000000", max: "No Max", members: []});
             let lobbyData = {
                 inProgress: false,
                 memberCount: 1,
@@ -126,7 +126,7 @@ wss.on('connection', (ws) => {
     {
         if (!lobbyMap.has(data.joinLobby))
         {
-            ws.send('Server response: Lobby not found!');
+            ws.send(JSON.stringify('Server response: Lobby not found!'));
             return;
         }
 
@@ -138,7 +138,7 @@ wss.on('connection', (ws) => {
             let totalJobs = filteredJobs.reduce((sum, obj) => sum + obj.max, 0);
             if (totalJobs == lobby.memberCount)
             {
-                ws.send('Server response: Lobby full!');
+                ws.send(JSON.stringify('Server response: Lobby full!'));
                 return;
             }
         }
