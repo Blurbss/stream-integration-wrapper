@@ -12,7 +12,7 @@ function getRandomInt(min, max) {
   }
 
 function AssignJobs(lobbyCode) {
-    let lobby = lobbyMap[lobbyCode];
+    let lobby = lobbyMap.get(lobbyCode);
     let unassigned = lobby.jobs[lobby.jobs.length - 1];
     let members = unassigned.splice(0, unassigned.length); // Removes all elements
 
@@ -31,7 +31,7 @@ function AssignJobs(lobbyCode) {
 }
 
 function AssignJobInProgress(lobbyCode, newMember) {
-    let lobby = lobbyMap[lobbyCode];
+    let lobby = lobbyMap.get(lobbyCode);
     // Filter objects that have less than 3 elements
     const filteredJobs = lobby.jobs.filter(obj => obj.name !== "Unassigned");
     const eligibleJobs = filteredJobs.filter(job => job.max == "No Max" || job.members.length < job.max);
@@ -68,7 +68,7 @@ wss.on('connection', (ws) => {
     {
         if (lobbyMap.has(data.lobbyCode))
         {
-            let lobby = lobbyMap[data.lobbyCode];
+            let lobby = lobbyMap.get(data.lobbyCode);
             if (data.endLobby)
             {
                 lobbyMap.delete(data.lobbyCode);
@@ -130,7 +130,7 @@ wss.on('connection', (ws) => {
             return;
         }
 
-        let lobby = lobbyMap[data.joinLobby];
+        let lobby = lobbyMap.get(data.joinLobby);
         const filteredJobs = lobby.jobs.filter(obj => obj.name !== "Unassigned");
 
         if (!filteredJobs.some(obj => obj.max == "No Max"))
