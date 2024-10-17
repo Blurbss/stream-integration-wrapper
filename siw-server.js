@@ -3,7 +3,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 
 
 let hostPass = "siw69420";
-const lobbyMap = newMap();
+const lobbyMap = new Map();
 
 function getRandomInt(min, max) {
     min = Math.ceil(min);   // Ensure min is an integer
