@@ -26,7 +26,7 @@ function AssignJobs(lobbyCode) {
 
         console.log(`Added ${member.name} to ${selectedJob.name}`);
         
-        member.client.send(JSON.stringify({job: selectedJob.name, color: selectedJob.color}));
+        member.client.send(JSON.stringify({job: selectedJob.name, goal: selectedJob.goal, color: selectedJob.color}));
     });
 }
 
@@ -47,7 +47,7 @@ function AssignJobInProgress(lobbyCode, newMember) {
 
         console.log(`Added ${newMember.name} to ${selectedJob.name}`);
 
-        newMember.client.send(JSON.stringify({job: selectedJob.name, color: selectedJob.color}));
+        newMember.client.send(JSON.stringify({job: selectedJob.name, goal: selectedJob.goal, color: selectedJob.color}));
     } else {
         console.log('ERROR: NO ROOM IN JOBS');
     }
