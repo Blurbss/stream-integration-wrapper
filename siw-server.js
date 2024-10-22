@@ -10,6 +10,30 @@ function getRandomInt(min, max) {
     max = Math.floor(max);  // Ensure max is an integer
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+  
+function UnassignJobs(lobbyCode) {
+    let lobby = lobbyMap.get(lobbyCode);
+    
+    let allMembers = [];
+
+    lobby.jobs.forEach(job => {
+        if (job.name !== 'Unassigned') {
+            let jobMembers = job.members.splice(0, job.members.length); // Removes all elements
+            allMembers.push(...jobMembers); // Spread operator to flatten the array
+        }
+      });
+
+    lobby.jobs[lobby.jobs.length - 1].members.push(...allMembers);
+
+    allMembers.forEach((member, index) => {
+        // Randomly select one of the eligible objects
+        const selectedJob = lobby.jobs[lobby.jobs.length - 1];
+
+        console.log(`Added ${member.name} to ${selectedJob.name}`);
+        
+        member.client.send(JSON.stringify({job: selectedJob.name, goal: selectedJob.goal, color: selectedJob.color}));
+    });
+}
 
 function AssignJobs(lobbyCode) {
     let lobby = lobbyMap.get(lobbyCode);
@@ -88,16 +112,8 @@ wss.on('connection', (ws) => {
             else if (data.resetLobby)
             {
                 lobby.inProgress = false;
-                let allMembers = [];
 
-                lobby.jobs.forEach(job => {
-                    if (job.name !== 'Unassigned') {
-                        let jobMembers = job.members.splice(0, job.members.length); // Removes all elements
-                        allMembers.push(...jobMembers); // Spread operator to flatten the array
-                    }
-                  });
-
-                lobby.jobs[lobby.jobs.length - 1].members.push(...allMembers);
+                UnassignJobs(data.lobbyCode);
                 
                 ws.send(JSON.stringify('Server response: Lobby Reset!'));
             }
