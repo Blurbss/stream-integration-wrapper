@@ -92,7 +92,8 @@ wss.on('connection', (ws) => {
 
                 lobby.jobs.forEach(job => {
                     if (job.name !== 'Unassigned') {
-                        allMembers.push(...job.members); // Spread operator to flatten the array
+                        let jobMembers = job.members.splice(0, job.members.length); // Removes all elements
+                        allMembers.push(...jobMembers); // Spread operator to flatten the array
                     }
                   });
 
