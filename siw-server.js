@@ -179,6 +179,7 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     console.log('Client disconnected');
     let leavingMember = null;
+    let hostClient = null;
 
     // Use for...of to iterate over map values directly
     for (const value of lobbyMap.values()) { // Changed myMap to lobbyMap
@@ -188,15 +189,16 @@ wss.on('connection', (ws) => {
 
             if (member) { // Correct variable name
                 leavingMember = member;
+                hostClient = value.hostClient;
                 break; // Break inner loop
             }
         }
-        if (leavingMember !== null) { // Check if found
+        if (leavingMember !== null && hostClient !== null) { // Check if found
             break; // Break outer loop if client found
         }
     }
 
     //SEND NOTIFICATION
-    lobby.hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
+    hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
   });
 });
