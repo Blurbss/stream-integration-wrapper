@@ -11,7 +11,7 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
   
-function UnassignJobs(lobbyCode) {
+function UnassignJobs(lobbyCode, ended = false) {
     let lobby = lobbyMap.get(lobbyCode);
     
     let allMembers = [];
@@ -31,7 +31,7 @@ function UnassignJobs(lobbyCode) {
 
         console.log(`Added ${member.name} to ${selectedJob.name}`);
         
-        member.client.send(JSON.stringify({job: selectedJob.name, goal: selectedJob.goal, color: selectedJob.color}));
+        member.client.send(JSON.stringify({job: ended ? "Ended" : selectedJob.name, goal: selectedJob.goal, color: selectedJob.color}));
     });
 }
 
@@ -178,5 +178,25 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     console.log('Client disconnected');
+    let leavingMember = null;
+
+    // Use for...of to iterate over map values directly
+    for (const value of lobbyMap.values()) { // Changed myMap to lobbyMap
+        for (let j = 0; j < value.jobs.length; j++) {
+            // Assuming value.jobs[j] is an array of members and you're looking for the member with a specific client
+            let member = value.jobs[j].members.find(x => x.client === ws); // Use strict equality
+
+            if (member) { // Correct variable name
+                leavingMember = member;
+                break; // Break inner loop
+            }
+        }
+        if (leavingMember !== null) { // Check if found
+            break; // Break outer loop if client found
+        }
+    }
+
+    //SEND NOTIFICATION
+    lobby.hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
   });
 });
