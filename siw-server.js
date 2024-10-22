@@ -199,6 +199,9 @@ wss.on('connection', (ws) => {
     }
 
     //SEND NOTIFICATION
-    hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
+    if (hostClient)
+        hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
+    else
+        console.log("HOST CLIENT NOT FOUND, MEMBER LEFT");
   });
 });
