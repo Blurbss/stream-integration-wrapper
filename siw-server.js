@@ -39,11 +39,16 @@ function AssignJobs(lobbyCode) {
     let lobby = lobbyMap.get(lobbyCode);
     let unassigned = lobby.jobs[lobby.jobs.length - 1].members;
     let members = unassigned.splice(0, unassigned.length); // Removes all elements
+    const filteredJobs = lobby.jobs.filter(obj => obj.name !== "Unassigned");
 
     members.forEach((member, index) => {
+        const eligibleJobs = filteredJobs.filter(job => job.max == "No Max" || job.members.length < job.max);
+        const priorityJobs = eligibleJobs.filter(job => job.priority);
+        const jobsToSearch = priorityJobs.length > 0 ? priorityJobs : eligibleJobs;
+
         // Randomly select one of the eligible objects
-        const randomIndex = getRandomInt(0, lobby.jobs.length - 2);
-        const selectedJob = lobby.jobs[randomIndex];
+        const randomIndex = getRandomInt(0, jobsToSearch.length - 1);
+        const selectedJob = jobsToSearch[randomIndex];
 
         // Add the new element to the selected object's elements array
         selectedJob.members.push(member);
@@ -56,15 +61,17 @@ function AssignJobs(lobbyCode) {
 
 function AssignJobInProgress(lobbyCode, newMember) {
     let lobby = lobbyMap.get(lobbyCode);
-    // Filter objects that have less than 3 elements
+    
     const filteredJobs = lobby.jobs.filter(obj => obj.name !== "Unassigned");
     const eligibleJobs = filteredJobs.filter(job => job.max == "No Max" || job.members.length < job.max);
+    const priorityJobs = eligibleJobs.filter(job => job.priority);
+    const jobsToSearch = priorityJobs.length > 0 ? priorityJobs : eligibleJobs;
 
     // Check if there are any eligible objects
-    if (eligibleJobs.length > 0) {
+    if (jobsToSearch.length > 0) {
         // Randomly select one of the eligible objects
-        const randomIndex = getRandomInt(0, eligibleJobs.length - 1);
-        const selectedJob = eligibleJobs[randomIndex];
+        const randomIndex = getRandomInt(0, jobsToSearch.length - 1);
+        const selectedJob = jobsToSearch[randomIndex];
 
         // Add the new element to the selected object's elements array
         selectedJob.members.push(newMember);
@@ -95,6 +102,12 @@ wss.on('connection', (ws) => {
             let lobby = lobbyMap.get(data.lobbyCode);
             if (data.endLobby)
             {
+                lobby.jobs.forEach(job => {
+                    job.members.forEach(member => {
+                        member.client.send(JSON.stringify({lobbyClosed: true}));
+                    });
+                });
+
                 lobbyMap.delete(data.lobbyCode);
                 ws.send(JSON.stringify('Server response: Lobby Deleted!'));
                 return;
@@ -102,6 +115,17 @@ wss.on('connection', (ws) => {
             else if (data.startLobby)
             {
                 lobby.inProgress = true;
+                let jobs = data.jobs;
+    
+                if (jobs.length == 0)
+                {
+                    ws.send(JSON.stringify("Server Response: ERROR NO JOBS!"));
+                    return;
+                }
+    
+                jobs.push({name: "Unassigned", color: "#000000", max: "No Max", members: []});
+                lobby.jobs = jobs;
+                
                 AssignJobs(data.lobbyCode);
             }
             else if (data.createLobby)
@@ -120,20 +144,11 @@ wss.on('connection', (ws) => {
         }
         else if (data.createLobby)
         {
-            let jobs = data.jobs;
-
-            if (jobs.length == 0)
-            {
-                ws.send(JSON.stringify("Server Response: ERROR NO JOBS!"));
-                return;
-            }
-
-            jobs.push({name: "Unassigned", color: "#000000", max: "No Max", members: []});
             let lobbyData = {
                 inProgress: false,
-                memberCount: 1,
+                memberCount: 0,
                 hostClient: ws,
-                jobs: data.jobs
+                jobs: []
             };
     
             lobbyMap.set(data.lobbyCode, lobbyData);
@@ -152,8 +167,8 @@ wss.on('connection', (ws) => {
 
         if (!filteredJobs.some(obj => obj.max == "No Max"))
         {
-            let totalJobs = filteredJobs.reduce((sum, obj) => sum + obj.max, 0);
-            if (totalJobs == lobby.memberCount)
+            let totalJobs = filteredJobs.reduce((sum, obj) => sum + Number(obj.max), 0);
+            if (lobby.memberCount >= totalJobs)
             {
                 ws.send(JSON.stringify('Server response: Lobby full!'));
                 return;
@@ -183,9 +198,12 @@ wss.on('connection', (ws) => {
 
     // Use for...of to iterate over map values directly
     for (const value of lobbyMap.values()) { // Changed myMap to lobbyMap
+        console.log(value);
         for (let j = 0; j < value.jobs.length; j++) {
+            console.log(value.jobs[j]);
             // Assuming value.jobs[j] is an array of members and you're looking for the member with a specific client
             let member = value.jobs[j].members.find(x => x.client === ws); // Use strict equality
+            console.log(member);
 
             if (member) { // Correct variable name
                 leavingMember = member;
