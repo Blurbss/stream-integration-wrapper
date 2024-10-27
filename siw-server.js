@@ -203,7 +203,6 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    console.log('Client disconnected');
     let leavingMember = null;
     let hostClient = null;
     let lobbyCode = "";
@@ -242,10 +241,14 @@ wss.on('connection', (ws) => {
     }
 
     //SEND NOTIFICATIONS
-    if (hostClient == ws && lobbyCode != "")
+    if (hostClient == ws && lobbyCode != "") {
+        console.log("Host has left, ending lobby");
         EndLobby(lobbyCode);
-    else if (hostClient)
+    }
+    else if (hostClient && leavingMember) {
+        console.log(leavingMember.name + " has disconnected");
         hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
+    }
     else
         console.log("HOST CLIENT NOT FOUND, MEMBER LEFT");
   });
