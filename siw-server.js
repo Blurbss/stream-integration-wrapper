@@ -86,6 +86,19 @@ function AssignJobInProgress(lobbyCode, newMember) {
     }
 }
 
+function EndLobby(lobbyCode) {
+    let lobby = lobbyMap.get(lobbyCode);
+    
+    lobby.jobs.forEach(job => {
+        job.members.forEach(member => {
+            member.client.send(JSON.stringify({lobbyClosed: true}));
+        });
+    });
+
+    lobbyMap.delete(data.lobbyCode);
+    ws.send(JSON.stringify('Server response: Lobby Deleted!'));
+}
+
 wss.on('connection', (ws) => {
   console.log('Client connected');
   
@@ -104,14 +117,7 @@ wss.on('connection', (ws) => {
             let lobby = lobbyMap.get(data.lobbyCode);
             if (data.endLobby)
             {
-                lobby.jobs.forEach(job => {
-                    job.members.forEach(member => {
-                        member.client.send(JSON.stringify({lobbyClosed: true}));
-                    });
-                });
-
-                lobbyMap.delete(data.lobbyCode);
-                ws.send(JSON.stringify('Server response: Lobby Deleted!'));
+                EndLobby(data.lobbyCode);
                 return;
             }
             else if (data.startLobby)
@@ -198,10 +204,17 @@ wss.on('connection', (ws) => {
     console.log('Client disconnected');
     let leavingMember = null;
     let hostClient = null;
+    let lobbyCode = "";
 
     // Use for...of to iterate over map values directly
-    for (const value of lobbyMap.values()) { // Changed myMap to lobbyMap
-        console.log(value);
+    for (const [key, value] of lobbyMap.entries()) { // Changed myMap to lobbyMap
+        if (value.hostClient == ws)
+        {
+            lobbyCode = key;
+            hostClient = value.hostClient;
+            break;
+        }
+        
         for (let j = 0; j < value.jobs.length; j++) {
             console.log(value.jobs[j]);
             // Assuming value.jobs[j] is an array of members and you're looking for the member with a specific client
@@ -219,8 +232,12 @@ wss.on('connection', (ws) => {
         }
     }
 
-    //SEND NOTIFICATION
-    if (hostClient)
+    memberCount--;
+
+    //SEND NOTIFICATIONS
+    if (hostClient == ws && lobbyCode != "")
+        EndLobby(lobbyCode);
+    else if (hostClient)
         hostClient.send(JSON.stringify({removeMember: leavingMember.name}));
     else
         console.log("HOST CLIENT NOT FOUND, MEMBER LEFT");
