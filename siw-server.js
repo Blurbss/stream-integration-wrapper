@@ -223,6 +223,7 @@ wss.on('connection', (ws) => {
 
             if (member) { // Correct variable name
                 leavingMember = member;
+                lobbyCode = key;
                 hostClient = value.hostClient;
                 break; // Break inner loop
             }
@@ -232,7 +233,10 @@ wss.on('connection', (ws) => {
         }
     }
 
-    memberCount--;
+    if (lobbyCode != "")
+    {
+        lobbyMap[lobbyCode].memberCount--;
+    }
 
     //SEND NOTIFICATIONS
     if (hostClient == ws && lobbyCode != "")
