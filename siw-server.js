@@ -86,7 +86,7 @@ function AssignJobInProgress(lobbyCode, newMember) {
     }
 }
 
-function EndLobby(lobbyCode) {
+function EndLobby(lobbyCode, ws = null) {
     let lobby = lobbyMap.get(lobbyCode);
     
     lobby.jobs.forEach(job => {
@@ -96,7 +96,9 @@ function EndLobby(lobbyCode) {
     });
 
     lobbyMap.delete(lobbyCode);
-    ws.send(JSON.stringify('Server response: Lobby Deleted!'));
+
+    if (ws)
+        ws.send(JSON.stringify('Server response: Lobby Deleted!'));
 }
 
 wss.on('connection', (ws) => {
@@ -117,7 +119,7 @@ wss.on('connection', (ws) => {
             let lobby = lobbyMap.get(data.lobbyCode);
             if (data.endLobby)
             {
-                EndLobby(data.lobbyCode);
+                EndLobby(data.lobbyCode, ws);
                 return;
             }
             else if (data.startLobby)
@@ -217,12 +219,15 @@ wss.on('connection', (ws) => {
         
         for (let j = 0; j < value.jobs.length; j++) {
             // Assuming value.jobs[j] is an array of members and you're looking for the member with a specific client
-            let member = value.jobs[j].members.find(x => x.client === ws); // Use strict equality
+            let memberIndex = value.jobs[j].members.findIndex(x => x.client === ws); // Use strict equality
+            let member = value.job[j].members[memberIndex];
 
             if (member) { // Correct variable name
                 leavingMember = member;
                 lobbyCode = key;
                 hostClient = value.hostClient;
+
+                value.jobs[j].members.splice(memberIndex, 1); // Remove the element
                 break; // Break inner loop
             }
         }
