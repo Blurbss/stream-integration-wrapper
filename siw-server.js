@@ -95,7 +95,7 @@ function EndLobby(lobbyCode) {
         });
     });
 
-    lobbyMap.delete(data.lobbyCode);
+    lobbyMap.delete(lobbyCode);
     ws.send(JSON.stringify('Server response: Lobby Deleted!'));
 }
 
@@ -216,10 +216,8 @@ wss.on('connection', (ws) => {
         }
         
         for (let j = 0; j < value.jobs.length; j++) {
-            console.log(value.jobs[j]);
             // Assuming value.jobs[j] is an array of members and you're looking for the member with a specific client
             let member = value.jobs[j].members.find(x => x.client === ws); // Use strict equality
-            console.log(member);
 
             if (member) { // Correct variable name
                 leavingMember = member;
