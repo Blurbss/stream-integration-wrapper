@@ -220,7 +220,7 @@ wss.on('connection', (ws) => {
         for (let j = 0; j < value.jobs.length; j++) {
             // Assuming value.jobs[j] is an array of members and you're looking for the member with a specific client
             let memberIndex = value.jobs[j].members.findIndex(x => x.client === ws); // Use strict equality
-            let member = value.job[j].members[memberIndex];
+            let member = value.jobs[j].members[memberIndex];
 
             if (member) { // Correct variable name
                 leavingMember = member;
