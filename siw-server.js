@@ -114,6 +114,7 @@ wss.on('connection', (ws) => {
             }
             else if (data.startLobby)
             {
+                console.log("IN PROGRESS");
                 lobby.inProgress = true;
                 let jobs = data.jobs;
     
@@ -163,8 +164,11 @@ wss.on('connection', (ws) => {
         }
 
         let lobby = lobbyMap.get(data.joinLobby);
+
+        console.log(lobby.inProgress);
         const filteredJobs = lobby.jobs.filter(obj => obj.name !== "Unassigned");
 
+        console.log(filteredJobs);
         if (lobby.inProgress && !filteredJobs.some(obj => obj.max == "No Max"))
         {
             let totalJobs = filteredJobs.reduce((sum, obj) => sum + Number(obj.max), 0);
