@@ -235,7 +235,7 @@ wss.on('connection', (ws) => {
 
     if (lobbyCode != "")
     {
-        lobbyMap[lobbyCode].memberCount--;
+        lobbyMap.get(lobbyCode).memberCount--;
     }
 
     //SEND NOTIFICATIONS
