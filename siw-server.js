@@ -24,6 +24,8 @@ function UnassignJobs(lobbyCode, ended = false) {
       });
 
     lobby.jobs[lobby.jobs.length - 1].members.push(...allMembers);
+    // Keep only the last element
+    lobby.jobs.splice(0, lobby.jobs.length - 1);
 
     allMembers.forEach((member, index) => {
         // Randomly select one of the eligible objects
@@ -123,8 +125,8 @@ wss.on('connection', (ws) => {
                     return;
                 }
     
-                jobs.push({name: "Unassigned", color: "#000000", max: "No Max", members: []});
-                lobby.jobs = jobs;
+                //jobs.push({name: "Unassigned", color: "#000000", max: "No Max", members: []});
+                lobby.jobs = [...jobs, ...lobby.jobs];
                 
                 AssignJobs(data.lobbyCode);
             }
@@ -148,7 +150,7 @@ wss.on('connection', (ws) => {
                 inProgress: false,
                 memberCount: 0,
                 hostClient: ws,
-                jobs: []
+                jobs: [{name: "Unassigned", color: "#000000", max: "No Max", members: []}]
             };
     
             lobbyMap.set(data.lobbyCode, lobbyData);
@@ -185,7 +187,7 @@ wss.on('connection', (ws) => {
         }
         else
         {
-            lobby.jobs[lobby.jobs.length - 1].members.push({name: data.name, client: ws});
+            lobby.jobs[0].members.push({name: data.name, client: ws});
             lobby.memberCount++;
             lobby.hostClient.send(JSON.stringify({newMember: data.name}));
         }
